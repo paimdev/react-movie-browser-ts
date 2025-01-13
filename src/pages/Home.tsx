@@ -1,24 +1,31 @@
 import React, { useEffect, useState } from "react";
 import Carousel from "../components/Carousel";
 import SearchBar from "../components/SearchBar";
-import { fetchMovies, fetchQueryMovies } from "../services/api";
-import { Movie } from "../types/Movie";
+import { fetchMovies, fetchQueryMovies, fetchGenres } from "../services/api";
+import { Movie, Genre } from "../types/Movie";
 
 const Home: React.FC = () => {
-    // State for carousels
     const [movies, setMovies] = useState<Movie[] | null>(null);
     const [tvShows, setTvShows] = useState<Movie[] | null>(null);
+    const [genreOneMovies, setGenreOneMovies] = useState<Movie[] | null>(null);
+    const [genreTwoMovies, setGenreTwoMovies] = useState<Movie[] | null>(null);
+    const [genres, setGenres] = useState<Genre[] | null>(null);
+    const [selectedGenreOne, setSelectedGenreOne] = useState<number | null>(null);
+    const [selectedGenreTwo, setSelectedGenreTwo] = useState<number | null>(null);
+
     const [loadingMovies, setLoadingMovies] = useState(true);
     const [loadingTvShows, setLoadingTvShows] = useState(true);
+    const [loadingGenreOne, setLoadingGenreOne] = useState(false);
+    const [loadingGenreTwo, setLoadingGenreTwo] = useState(false);
     const [errorMovies, setErrorMovies] = useState(false);
     const [errorTvShows, setErrorTvShows] = useState(false);
+    const [errorGenreOne, setErrorGenreOne] = useState(false);
+    const [errorGenreTwo, setErrorGenreTwo] = useState(false);
 
-    // State for search functionality
     const [searchResults, setSearchResults] = useState<Movie[] | null>(null);
     const [loadingSearch, setLoadingSearch] = useState(false);
     const [errorSearch, setErrorSearch] = useState(false);
 
-    // Load popular movies and TV shows
     useEffect(() => {
         const loadMovies = async () => {
             setLoadingMovies(true);
@@ -44,14 +51,51 @@ const Home: React.FC = () => {
             }
         };
 
+        const loadGenres = async () => {
+            try {
+                const results = await fetchGenres();
+                setGenres(results);
+            } catch {
+                console.error("Failed to load genres");
+            }
+        };
+
         loadMovies();
         loadTvShows();
+        loadGenres();
     }, []);
 
-    // Handle search functionality
+    const loadGenreMovies = async (
+        genreId: number,
+        setMoviesState: React.Dispatch<React.SetStateAction<Movie[] | null>>,
+        setLoadingState: React.Dispatch<React.SetStateAction<boolean>>,
+        setErrorState: React.Dispatch<React.SetStateAction<boolean>>
+    ) => {
+        setLoadingState(true);
+        try {
+            const results = await fetchMovies(`discover/movie?with_genres=${genreId}`);
+            setMoviesState(results);
+        } catch {
+            setErrorState(true);
+        } finally {
+            setLoadingState(false);
+        }
+    };
+
+    const handleGenreOneChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const genreId = parseInt(event.target.value, 10);
+        setSelectedGenreOne(genreId);
+        loadGenreMovies(genreId, setGenreOneMovies, setLoadingGenreOne, setErrorGenreOne);
+    };
+
+    const handleGenreTwoChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const genreId = parseInt(event.target.value, 10);
+        setSelectedGenreTwo(genreId);
+        loadGenreMovies(genreId, setGenreTwoMovies, setLoadingGenreTwo, setErrorGenreTwo);
+    };
+
     const handleSearch = async (query: string) => {
         if (!query.trim()) {
-            // Reset search state if query is empty
             setSearchResults(null);
             setErrorSearch(false);
             return;
@@ -71,10 +115,8 @@ const Home: React.FC = () => {
 
     return (
         <div className="container">
-            {/* Search Bar */}
             <SearchBar onSearch={handleSearch} />
 
-            {/* Search Results */}
             {searchResults ? (
                 <Carousel
                     title="Search Results"
@@ -84,7 +126,6 @@ const Home: React.FC = () => {
                 />
             ) : (
                 <>
-                    {/* Popular Movies Carousel */}
                     <Carousel
                         title="Popular Movies"
                         items={movies}
@@ -92,13 +133,74 @@ const Home: React.FC = () => {
                         error={errorMovies}
                     />
 
-                    {/* Popular TV Shows Carousel */}
                     <Carousel
                         title="Popular TV Shows"
                         items={tvShows}
                         loading={loadingTvShows}
                         error={errorTvShows}
                     />
+
+                    {genres && (
+                        <>
+                            <div className="genre-selector">
+                                <label htmlFor="genre-one">Select Genre One:</label>
+                                <select
+                                    id="genre-one"
+                                    onChange={handleGenreOneChange}
+                                    value={selectedGenreOne || ""}
+                                >
+                                    <option value="" disabled>
+                                        Choose a genre
+                                    </option>
+                                    {genres.map((genre) => (
+                                        <option key={genre.id} value={genre.id}>
+                                            {genre.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            {selectedGenreOne && (
+                                <Carousel
+                                    title={`${genres.find((genre) => genre.id === selectedGenreOne)?.name || "Selected Genre"
+                                        } Movies`}
+                                    items={genreOneMovies}
+                                    loading={loadingGenreOne}
+                                    error={errorGenreOne}
+                                />
+                            )}
+                        </>
+                    )}
+
+                    {genres && (
+                        <>
+                            <div className="genre-selector">
+                                <label htmlFor="genre-two">Select Genre Two:</label>
+                                <select
+                                    id="genre-two"
+                                    onChange={handleGenreTwoChange}
+                                    value={selectedGenreTwo || ""}
+                                >
+                                    <option value="" disabled>
+                                        Choose a genre
+                                    </option>
+                                    {genres.map((genre) => (
+                                        <option key={genre.id} value={genre.id}>
+                                            {genre.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            {selectedGenreTwo && (
+                                <Carousel
+                                    title={`${genres.find((genre) => genre.id === selectedGenreTwo)?.name || "Selected Genre"
+                                        } Movies`}
+                                    items={genreTwoMovies}
+                                    loading={loadingGenreTwo}
+                                    error={errorGenreTwo}
+                                />
+                            )}
+                        </>
+                    )}
                 </>
             )}
         </div>
