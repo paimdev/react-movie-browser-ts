@@ -48,7 +48,7 @@ const Carousel: React.FC<CarouselProps> = ({ title, items, loading, error }) => 
                                         height: "auto",
                                     }}
                                 />
-                                <p style={{ textAlign: "center", marginTop: "5px" }}>
+                                <p className="movie-title" style={{ textAlign: "center", marginTop: "5px" }}>
                                     {item.title}
                                 </p>
                             </Link>
