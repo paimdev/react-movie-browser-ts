@@ -21,7 +21,6 @@ const Details: React.FC = () => {
         <div>
             <h1>{movie.title}</h1>
             <p>{movie.overview}</p>
-            <button>Watch Movie</button>
             <VideoPlayer videoUrl="https://rawgit.com/mediaelement/mediaelement-files/master/big_buck_bunny.mp4" />
         </div>
     );
