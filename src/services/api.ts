@@ -11,6 +11,13 @@ export const fetchMovies = async (type: string): Promise<Movie[]> => {
   return response.data.results;
 };
 
+export const fetchQueryMovies = async (query: string): Promise<Movie[]> => {
+  const response = await axios.get(`${BASE_URL}/search/movie`, {
+    params: { api_key: API_KEY, query },
+  });
+  return response.data.results;
+};
+
 export const fetchGenres = async (): Promise<Genre[]> => {
   const response = await axios.get(`${BASE_URL}/genre/movie/list`, {
     params: { api_key: API_KEY },
