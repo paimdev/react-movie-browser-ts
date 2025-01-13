@@ -3,8 +3,8 @@
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "allowJs": true,
-    "module": "commonjs",
-    "target": "ES6",
+    "module": "esnext",
+    "target": "esnext",
     "moduleResolution": "node",
     "skipLibCheck": true,
     "strict": true

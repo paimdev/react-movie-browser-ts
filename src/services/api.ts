@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Movie, Genre } from "../types/Movie.ts";
+import { Movie, Genre } from "../types/Movie";
 
 const API_KEY = import.meta.env.VITE_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
